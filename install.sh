@@ -61,4 +61,4 @@ case ":$PATH:" in
     ;;
 esac
 echo "Run:  jptxt"
-)
+

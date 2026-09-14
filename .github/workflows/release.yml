@@ -98,4 +98,4 @@ jobs:
             --repo "${{ github.repository }}" \
             --title "jptxt ${{ github.ref_name }}" \
             --generate-notes
-)
+

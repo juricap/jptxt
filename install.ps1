@@ -41,4 +41,4 @@ Write-Host ""
 Write-Host "Installed $Dest"
 Write-Host "Run:  jptxt"
 Write-Host "This process PATH is updated; if 'jptxt' is not found, open a new terminal."
-)
+

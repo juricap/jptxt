@@ -21,4 +21,4 @@ jobs:
           cmake --build build -j 4
       - name: Selftest
         run: ./build/jptxt --selftest
-)
+
