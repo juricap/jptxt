@@ -2,7 +2,8 @@ name: release
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
@@ -20,8 +21,6 @@ jobs:
             artifact: jptxt-linux-x64
           - os: macos-latest
             artifact: jptxt-macos-arm64
-          - os: macos-13
-            artifact: jptxt-macos-x64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
