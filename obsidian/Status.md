@@ -61,7 +61,7 @@ Idle-ish GUI with a small file: tens of MB of OS overhead at most; huge files do
 
 ## Distribution
 
-GitHub Actions on tag `v*` builds Windows x64, Linux x64/arm64, macOS arm64/x64 and attaches them to the release plus `install.ps1` / `install.sh`.
+GitHub Actions on tag `v*` builds Windows x64, Linux x64, macOS arm64/x64 and attaches them to the release plus `install.ps1` / `install.sh`. Repo is public so the one-liners work without a token.
 
 ## Known gaps
 

@@ -18,8 +18,6 @@ jobs:
             artifact: jptxt-windows-x64.exe
           - os: ubuntu-22.04
             artifact: jptxt-linux-x64
-          - os: ubuntu-24.04-arm
-            artifact: jptxt-linux-arm64
           - os: macos-latest
             artifact: jptxt-macos-arm64
           - os: macos-13
