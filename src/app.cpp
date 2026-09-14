@@ -114,12 +114,14 @@ bool app_open_path(App* a, const char* path) {
 
 static bool save_doc(App* a, Doc* d, bool save_as) {
     std::string path = d->path;
-    if (save_as || path.empty()) {
+    if (save_as || path.empty() || d->readonly) {
         if (!plat_dlg_save(path)) return false;
     }
     if (!doc_save(d, path.c_str())) {
         a->status = "Save failed";
         plat_beep();
+        plat_error("Could not save the file.\n\n"
+                   "The folder may not be writable, or the file is still open elsewhere.");
         plat_invalidate();
         return false;
     }

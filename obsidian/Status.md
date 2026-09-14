@@ -55,6 +55,10 @@ Vault home: [[Home]]. Design: [[Design]]. Decisions: [[Choices]].
 
 Idle-ish GUI with a small file: tens of MB of OS overhead at most; huge files do not keep the whole map in the working set after index.
 
+## Fixed
+
+- **Save of an opened file on Windows** failed: the mmap kept the original locked, so `ReplaceFile`/`MoveFile` could not overwrite it. Save now unmaps, replaces, remaps. Copying only `jptxt.exe` is enough (static CRT, no extra DLLs).
+
 ## Known gaps
 
 - Not on PATH (`jptxt` in a random prompt will fail — use `build\jptxt.exe`)

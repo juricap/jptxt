@@ -236,6 +236,7 @@ bool plat_dlg_open(std::vector<std::string>& out);
 bool plat_dlg_save(std::string& path);
 bool plat_dlg_goto(int maxline, int cur, int* out);
 void plat_beep();
+void plat_error(const char* utf8);
 void plat_find_dialog(bool replace);
 void plat_about();
 void plat_set_font(int px);

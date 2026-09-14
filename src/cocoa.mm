@@ -307,6 +307,13 @@ bool plat_dlg_goto(int maxline, int cur, int* out) {
     return true;
 }
 void plat_beep() { NSBeep(); }
+void plat_error(const char* utf8) {
+    NSAlert* al = [[NSAlert alloc] init];
+    al.messageText = @"Save failed";
+    al.informativeText = u2ns(utf8);
+    al.alertStyle = NSAlertStyleWarning;
+    [al runModal];
+}
 void plat_about() {
     NSAlert* al = [[NSAlert alloc] init];
     al.messageText = @"jptxt 0.1.1";

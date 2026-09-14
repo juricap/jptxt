@@ -902,8 +902,39 @@ static bool write_all(int fd, const uint8_t* p, uint64_t n) {
 }
 #endif
 
+template<typename Writer>
+static bool write_pieces(Doc* d, Writer writer) {
+    if (d->enc == Enc::UTF8BOM) {
+        static const uint8_t bom[3] = {0xEF, 0xBB, 0xBF};
+        if (!writer(bom, 3)) return false;
+    }
+    for (auto& p : d->pcs) {
+        if (!writer(piece_ptr(d, p), p.len)) return false;
+    }
+    return true;
+}
+
+static void adopt_saved_map(Doc* d) {
+    d->add.clear();
+    d->pcs.clear();
+    if (d->map.size && d->map.data) {
+        uint64_t off = 0, n = d->map.size;
+        if (d->enc == Enc::UTF8BOM && n >= 3) { off = 3; n -= 3; }
+        d->pcs.push_back(Piece{0, off, n});
+        d->len = n;
+    } else {
+        d->len = 0;
+    }
+    doc_reindex(d);
+}
+
 bool doc_save(Doc* d, const char* path_utf8) {
     if (!path_utf8 || !*path_utf8) return false;
+
+    // In-memory text is always UTF-8. Don't claim UTF-16/Latin-1 after writing.
+    if (d->enc == Enc::UTF16LE || d->enc == Enc::UTF16BE || d->enc == Enc::Latin1)
+        d->enc = Enc::UTF8;
+
 #ifdef _WIN32
     wchar_t w[32768];
     if (MultiByteToWideChar(CP_UTF8, 0, path_utf8, -1, w, 32768) <= 0) return false;
@@ -913,39 +944,41 @@ bool doc_save(Doc* d, const char* path_utf8) {
     wcscat(tmp, L".jptxt~");
     HANDLE f = CreateFileW(tmp, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (f == INVALID_HANDLE_VALUE) return false;
-    bool ok = true;
-    if (d->enc == Enc::UTF8BOM) {
-        static const uint8_t bom[3] = {0xEF, 0xBB, 0xBF};
-        ok = write_all(f, bom, 3);
-    }
-    if (ok) {
-        for (auto& p : d->pcs) {
-            if (!write_all(f, piece_ptr(d, p), p.len)) { ok = false; break; }
-        }
-    }
+    bool ok = write_pieces(d, [&](const uint8_t* p, uint64_t n) { return write_all(f, p, n); });
     CloseHandle(f);
     if (!ok) { DeleteFileW(tmp); return false; }
-    if (!MoveFileExW(tmp, w, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) {
+
+    // Mapping keeps the original file locked; Windows will refuse ReplaceFile/MoveFile.
+    doc_unmap(d);
+
+    DWORD attr = GetFileAttributesW(w);
+    if (attr != INVALID_FILE_ATTRIBUTES)
+        ok = ReplaceFileW(w, tmp, nullptr, REPLACEFILE_IGNORE_MERGE_ERRORS, nullptr, nullptr) != 0;
+    else
+        ok = MoveFileW(tmp, w) != 0;
+    if (!ok) {
         DeleteFileW(tmp);
+        map_open(&d->map, d->path.empty() ? path_utf8 : d->path.c_str());
         return false;
     }
+    if (!map_open(&d->map, path_utf8)) return false;
+    adopt_saved_map(d);
 #else
     std::string tmp = std::string(path_utf8) + ".jptxt~";
     int fd = open(tmp.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) return false;
-    bool ok = true;
-    if (d->enc == Enc::UTF8BOM) {
-        static const uint8_t bom[3] = {0xEF, 0xBB, 0xBF};
-        ok = write_all(fd, bom, 3);
-    }
-    if (ok) {
-        for (auto& p : d->pcs) {
-            if (!write_all(fd, piece_ptr(d, p), p.len)) { ok = false; break; }
-        }
-    }
+    bool ok = write_pieces(d, [&](const uint8_t* p, uint64_t n) { return write_all(fd, p, n); });
     close(fd);
     if (!ok) { unlink(tmp.c_str()); return false; }
-    if (rename(tmp.c_str(), path_utf8) != 0) { unlink(tmp.c_str()); return false; }
+
+    doc_unmap(d);
+    if (rename(tmp.c_str(), path_utf8) != 0) {
+        unlink(tmp.c_str());
+        if (!d->path.empty()) map_open(&d->map, d->path.c_str());
+        return false;
+    }
+    if (!map_open(&d->map, path_utf8)) return false;
+    adopt_saved_map(d);
 #endif
     d->path = path_utf8;
     d->name = basename_utf8(path_utf8);
@@ -1023,6 +1056,13 @@ int doc_selftest(FILE* out) {
     std::string s2;
     doc_read(&d2, 0, d2.len, &s2);
     check(s2 == "hello\nworld\n", "roundtrip");
+    doc_insert(&d2, 0, "X", 1);
+    check(doc_save(&d2, tmp), "save while mapped");
+    Doc d3;
+    check(doc_load(&d3, tmp), "reload after mapped save");
+    std::string s3;
+    doc_read(&d3, 0, d3.len, &s3);
+    check(s3 == "Xhello\nworld\n", "mapped save content");
 #ifdef _WIN32
     DeleteFileA(tmp);
 #else

@@ -236,6 +236,10 @@ bool plat_dlg_goto(int maxline, int cur, int* out) {
     return true;
 }
 void plat_beep() { if (g_dpy) XBell(g_dpy, 0); }
+void plat_error(const char* utf8) {
+    fprintf(stderr, "jptxt: %s\n", utf8);
+    zenity("--error --title=jptxt --text='Could not save the file.'", nullptr);
+}
 void plat_about() {
     zenity("--info --title='About jptxt' --text='jptxt 0.1.1\\nA super-fast native notepad.\\nOne instance. Triple-Esc closes.'", nullptr);
 }

@@ -201,7 +201,7 @@ bool plat_dlg_open(std::vector<std::string>& out) {
     of.lpstrFilter = L"All files\0*.*\0Text\0*.txt;*.md;*.c;*.h;*.cpp;*.rs;*.py;*.js;*.json;*.xml;*.html;*.css;*.go;*.java\0";
     of.lpstrFile = buf;
     of.nMaxFile = 32768;
-    of.Flags = OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY;
+    of.Flags = OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
     if (!GetOpenFileNameW(&of)) return false;
     // multi-select: dir\0file\0file\0\0  or single path
     wchar_t* p = buf;
@@ -231,7 +231,7 @@ bool plat_dlg_save(std::string& path) {
     of.lpstrFilter = L"All files\0*.*\0Text\0*.txt\0";
     of.lpstrFile = buf;
     of.nMaxFile = 32768;
-    of.Flags = OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
+    of.Flags = OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
     of.lpstrDefExt = L"txt";
     if (!GetSaveFileNameW(&of)) return false;
     path = w2u(buf);
@@ -269,6 +269,9 @@ bool plat_dlg_goto(int maxline, int cur, int* out) {
     return true;
 }
 void plat_beep() { MessageBeep(MB_ICONWARNING); }
+void plat_error(const char* utf8) {
+    MessageBoxW(g_hwnd, u2w(utf8).c_str(), L"jptxt", MB_OK | MB_ICONERROR);
+}
 void plat_about() {
     MessageBoxW(g_hwnd,
         L"jptxt 0.1.1\n"
