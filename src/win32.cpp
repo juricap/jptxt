@@ -274,7 +274,7 @@ void plat_error(const char* utf8) {
 }
 void plat_about() {
     MessageBoxW(g_hwnd,
-        L"jptxt 0.1.1\n"
+        L"jptxt 0.1.2\n"
         L"A super-fast native notepad.\n\n"
         L"mmap + piece table, syntax highlight, hex lister.\n"
         L"One instance. Triple-Esc closes.\n"

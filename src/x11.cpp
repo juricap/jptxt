@@ -241,7 +241,7 @@ void plat_error(const char* utf8) {
     zenity("--error --title=jptxt --text='Could not save the file.'", nullptr);
 }
 void plat_about() {
-    zenity("--info --title='About jptxt' --text='jptxt 0.1.1\\nA super-fast native notepad.\\nOne instance. Triple-Esc closes.'", nullptr);
+    zenity("--info --title='About jptxt' --text='jptxt 0.1.2\\nA super-fast native notepad.\\nOne instance. Triple-Esc closes.'", nullptr);
 }
 void plat_find_dialog(bool replace) {
     std::string pat, repl;

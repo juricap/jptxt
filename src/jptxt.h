@@ -7,7 +7,7 @@
 #include <memory>
 #include "resource.h"
 
-#define JPTXT_VERSION "0.1.1"
+#define JPTXT_VERSION "0.1.2"
 #define JPTXT_ESC_CLOSE_N     3
 #define JPTXT_ESC_GAP_MS      500
 #define JPTXT_COPYDATA_MAGIC  0x4A505458u /* 'JPTX' */

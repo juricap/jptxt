@@ -316,7 +316,7 @@ void plat_error(const char* utf8) {
 }
 void plat_about() {
     NSAlert* al = [[NSAlert alloc] init];
-    al.messageText = @"jptxt 0.1.1";
+    al.messageText = @"jptxt 0.1.2";
     al.informativeText = @"A super-fast native notepad.\nmmap + piece table, syntax, hex lister.\nOne instance. Triple-Esc closes.\nNo Electron, no scripting, no sidebars.";
     [al runModal];
 }

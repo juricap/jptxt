@@ -1,6 +1,6 @@
 # Status
 
-v**0.1.1** — Windows, Linux (`ssh ai`), and Mac (`ssh mac`, arm64) verified.
+v**0.1.2** — Windows, Linux, Mac verified. GitHub Releases + `install.ps1` / `install.sh` one-liners.
 
 Vault home: [[Home]]. Design: [[Design]]. Decisions: [[Choices]].
 
@@ -59,21 +59,25 @@ Idle-ish GUI with a small file: tens of MB of OS overhead at most; huge files do
 
 - **Save of an opened file on Windows** failed: the mmap kept the original locked, so `ReplaceFile`/`MoveFile` could not overwrite it. Save now unmaps, replaces, remaps. Copying only `jptxt.exe` is enough (static CRT, no extra DLLs).
 
+## Distribution
+
+GitHub Actions on tag `v*` builds Windows x64, Linux x64/arm64, macOS arm64/x64 and attaches them to the release plus `install.ps1` / `install.sh`.
+
 ## Known gaps
 
-- Not on PATH (`jptxt` in a random prompt will fail — use `build\jptxt.exe`)
+- Not on PATH unless you use the install script (or add `build\` yourself)
 - No word wrap
 - Block-comment state is not indexed (highlight is line-local on huge files)
 - Hex is read-only (lister, not a hex editor)
 - Undo coalescing is coarse (indent is many undo steps)
 - Find dialog has no explicit “regex” checkbox (regex chars → regex, else literal; compile fail → literal)
 - Cocoa/X11 singleton and triple-Esc are implemented but untested here
-- No file-type association, no installer
+- No file-type association; unsigned Windows exe (SmartScreen)
 - IME / complex scripts: BMP via `WM_CHAR` only
 
 ## Next (when needed)
 
-- Installer / PATH / “Open with”
+- “Open with” / file association
 - Sparse line index for multi-GB
 - Wrap, line numbers gutter (not a sidebar)
 - Hex copy as raw bytes

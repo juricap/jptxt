@@ -11,13 +11,26 @@ Open this folder as an Obsidian vault (`File → Open vault → obsidian/`).
 - [[Status]] — what works, measured numbers, known gaps
 - [[Shortcuts]] — keys and menus
 
+## Install
+
+```powershell
+irm https://raw.githubusercontent.com/juricap/jptxt/main/install.ps1 | iex
+```
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/juricap/jptxt/main/install.sh | bash
+```
+
+Artifacts: [GitHub Releases](https://github.com/juricap/jptxt/releases).
+
 ## Run
 
 ```
+jptxt
+jptxt path/to/file.txt
 build\jptxt.exe
-build\jptxt.exe path\to\file.txt
 ```
 
-Not on PATH. One process: a second launch hands files to the running window.
+One process: a second launch hands files to the running window.
 
 Repo: `git@github.com:juricap/jptxt.git`

@@ -4,6 +4,30 @@ A super-fast, super-light native notepad. Tabs, basic syntax highlighting, block
 
 **Speed first, then weight.** Features come after.
 
+## Install
+
+Binaries come from [GitHub Releases](https://github.com/juricap/jptxt/releases). No extra runtimes.
+
+**Windows** (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/juricap/jptxt/main/install.ps1 | iex
+```
+
+Puts `jptxt.exe` in `%LOCALAPPDATA%\Programs\jptxt` and adds that folder to your user PATH.
+
+**macOS / Linux**:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/juricap/jptxt/main/install.sh | bash
+```
+
+Puts `jptxt` in `~/.local/bin`. Add that to `PATH` if the installer says so.
+
+Pin a version: `JPTXT_VERSION=v0.1.2` (bash) or `$env:JPTXT_VERSION='v0.1.2'` (PowerShell) before the one-liner.
+
+Windows SmartScreen may warn on first run (the exe is not Authenticode-signed).
+
 ## Why not a fork of SciTE / Notepad++ / lite-xl?
 
 | Candidate | Why it was rejected |
@@ -25,7 +49,7 @@ So jptxt is **original C++17** that borrows the *algorithms*, not a 150 kLOC tre
 
 Design notes live in the Obsidian vault: [`obsidian/`](obsidian/Home.md).
 
-## What it does (v0.1.1)
+## What it does (v0.1.2)
 
 - **Single instance**: a second launch focuses the running window and opens the files there
 - Instant window; drop files or `build\jptxt.exe file1 file2 …`

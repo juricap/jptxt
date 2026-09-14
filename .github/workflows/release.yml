@@ -1,0 +1,96 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: jptxt-windows-x64.exe
+          - os: ubuntu-22.04
+            artifact: jptxt-linux-x64
+          - os: ubuntu-24.04-arm
+            artifact: jptxt-linux-arm64
+          - os: macos-latest
+            artifact: jptxt-macos-arm64
+          - os: macos-13
+            artifact: jptxt-macos-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libx11-dev g++ cmake
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -j 4
+
+      - name: Selftest
+        shell: bash
+        run: |
+          set -e
+          if [ -x build/Release/jptxt.exe ]; then ./build/Release/jptxt.exe --selftest
+          elif [ -x build/jptxt.exe ]; then ./build/jptxt.exe --selftest
+          else ./build/jptxt --selftest
+          fi
+
+      - name: Pack
+        shell: bash
+        run: |
+          set -e
+          mkdir -p dist
+          if [ -f build/Release/jptxt.exe ]; then src=build/Release/jptxt.exe
+          elif [ -f build/jptxt.exe ]; then src=build/jptxt.exe
+          else src=build/jptxt
+          fi
+          cp "$src" "dist/${{ matrix.artifact }}"
+          if [ "${{ runner.os }}" != "Windows" ]; then
+            chmod +x "dist/${{ matrix.artifact }}"
+            strip "dist/${{ matrix.artifact }}" || true
+          fi
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          ls -l
+          cat SHA256SUMS.txt
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" dist/* install.sh install.ps1 \
+            --repo "${{ github.repository }}" \
+            --title "jptxt ${{ github.ref_name }}" \
+            --generate-notes
+)
