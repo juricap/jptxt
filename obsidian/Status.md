@@ -1,6 +1,6 @@
 # Status
 
-v**0.1.1** — Windows + Linux (`ssh ai`) verified. Mac (`ssh mac` / `macz`) was offline.
+v**0.1.1** — Windows, Linux (`ssh ai`), and Mac (`ssh mac`, arm64) verified.
 
 Vault home: [[Home]]. Design: [[Design]]. Decisions: [[Choices]].
 
@@ -17,6 +17,17 @@ Vault home: [[Home]]. Design: [[Design]]. Decisions: [[Choices]].
 | xvfb GUI | runs (timeout smoke, no X errors) |
 
 `--bench` / `--selftest` work without a display.
+
+## Mac (`Devs-MacBook-Pro`, Darwin 25.2 / macOS 26.2, AppleClang, arm64)
+
+| | |
+|---|---|
+| Binary | 229 KB Mach-O arm64 |
+| `--selftest` | ok |
+| sample.cpp | 0.11 ms |
+| `/bin/ls` as a file | binary → hex, 0.09 ms |
+| 20 MB / 350k lines | 4.2 ms |
+| 120 MB / 2.1 M lines | **25 ms** |
 
 ## Works (Windows)
 

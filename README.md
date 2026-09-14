@@ -87,7 +87,7 @@ Measured on this machine (mmap + newline index, `--bench`):
 
 Working set after opening the 120 MB / 2.17 M-line file: **~12 MB** (line index stays; file pages are trimmed and faulted back in for the viewport).
 
-Linux (`ssh ai`, Ubuntu 22.04, g++ 11.4): 291 KB ELF; `--selftest` ok; 120 MB open **30 ms**; xvfb GUI smoke ok. `ssh mac` was unreachable (laptop off).
+Linux (`ssh ai`): 291 KB ELF; 120 MB open **30 ms**. Mac (`ssh mac`, arm64): 229 KB Mach-O; 120 MB open **25 ms**. `--selftest` ok on both.
 
 ### macOS
 
@@ -104,6 +104,14 @@ Needs Cocoa (Xcode CLT).
 sudo apt install g++ cmake libx11-dev
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
+```
+
+Headless checks (no window):
+
+```sh
+./build/jptxt --selftest
+./build/jptxt --bench testdata/sample.cpp
+./build/jptxt --bench /bin/ls    # open the ls *binary file* in hex lister
 ```
 
 File dialogs use `zenity` when present, otherwise a stdin prompt.
