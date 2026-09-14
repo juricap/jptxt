@@ -521,21 +521,29 @@ int APIENTRY wWinMain(HINSTANCE inst, HINSTANCE, LPWSTR, int show) {
 
     int argc = 0;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    bool selftest = argv && argc >= 2 && wcscmp(argv[1], L"--selftest") == 0;
     bool bench = argv && argc >= 3 && wcscmp(argv[1], L"--bench") == 0;
 
-    if (!bench) {
-        g_single = CreateMutexW(nullptr, TRUE, L"Local\\jptxt-singleton");
-        if (g_single && GetLastError() == ERROR_ALREADY_EXISTS) {
-            HWND exist = nullptr;
-            for (int i = 0; i < 40 && !exist; i++) {
-                exist = FindWindowW(L"jptxt", nullptr);
-                if (!exist) Sleep(25);
-            }
-            if (exist) handoff_to_existing(exist, argv, argc);
-            if (argv) LocalFree(argv);
-            if (g_single) CloseHandle(g_single);
-            return 0;
+    if (selftest || bench) {
+        if (!AttachConsole(ATTACH_PARENT_PROCESS)) AllocConsole();
+        FILE* fp = nullptr;
+        freopen_s(&fp, "CONOUT$", "w", stdout);
+        int rc = selftest ? doc_selftest(stdout) : doc_bench(w2u(argv[2]).c_str(), stdout);
+        if (argv) LocalFree(argv);
+        return rc;
+    }
+
+    g_single = CreateMutexW(nullptr, TRUE, L"Local\\jptxt-singleton");
+    if (g_single && GetLastError() == ERROR_ALREADY_EXISTS) {
+        HWND exist = nullptr;
+        for (int i = 0; i < 40 && !exist; i++) {
+            exist = FindWindowW(L"jptxt", nullptr);
+            if (!exist) Sleep(25);
         }
+        if (exist) handoff_to_existing(exist, argv, argc);
+        if (argv) LocalFree(argv);
+        if (g_single) CloseHandle(g_single);
+        return 0;
     }
 
     WNDCLASSEXW wc{};
@@ -551,38 +559,6 @@ int APIENTRY wWinMain(HINSTANCE inst, HINSTANCE, LPWSTR, int show) {
     RegisterClassExW(&wc);
 
     app_init(&g_app);
-
-    if (bench) {
-        if (!AttachConsole(ATTACH_PARENT_PROCESS)) AllocConsole();
-        FILE* fp = nullptr;
-        freopen_s(&fp, "CONOUT$", "w", stdout);
-        FILE* logf = fopen("jptxt-bench.log", "a");
-        std::string pathu = w2u(argv[2]);
-        if (logf) { fprintf(logf, "start %s\n", pathu.c_str()); fflush(logf); }
-        doc_set_trace(logf);
-        Doc d;
-        LARGE_INTEGER freq, t0, t1;
-        QueryPerformanceFrequency(&freq);
-        QueryPerformanceCounter(&t0);
-        bool ok = doc_load(&d, pathu.c_str());
-        QueryPerformanceCounter(&t1);
-        double ms = (double)(t1.QuadPart - t0.QuadPart) * 1000.0 / (double)freq.QuadPart;
-        char line[512];
-        snprintf(line, sizeof(line),
-                 "%s ok=%d bytes=%llu lines=%llu hex=%d bin=%d enc=%s time=%.2f ms\n",
-                 pathu.c_str(),
-                 ok ? 1 : 0,
-                 (unsigned long long)d.len,
-                 (unsigned long long)(ok ? doc_line_count(&d) : 0),
-                 ok && d.hex ? 1 : 0,
-                 ok && d.binary ? 1 : 0,
-                 ok ? enc_name(d.enc) : "?",
-                 ms);
-        fputs(line, stdout); fflush(stdout);
-        if (logf) { fputs(line, logf); fclose(logf); }
-        LocalFree(argv);
-        return ok ? 0 : 2;
-    }
 
     int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
     int ww = 1100, wh = 720;

@@ -87,6 +87,8 @@ Measured on this machine (mmap + newline index, `--bench`):
 
 Working set after opening the 120 MB / 2.17 M-line file: **~12 MB** (line index stays; file pages are trimmed and faulted back in for the viewport).
 
+Linux (`ssh ai`, Ubuntu 22.04, g++ 11.4): 291 KB ELF; `--selftest` ok; 120 MB open **30 ms**; xvfb GUI smoke ok. `ssh mac` was unreachable (laptop off).
+
 ### macOS
 
 ```sh

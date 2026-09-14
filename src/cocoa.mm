@@ -346,6 +346,11 @@ static int take_singleton_lock() {
 }
 
 int main(int argc, char** argv) {
+    if (argc >= 2 && strcmp(argv[1], "--selftest") == 0)
+        return doc_selftest(stdout);
+    if (argc >= 3 && strcmp(argv[1], "--bench") == 0)
+        return doc_bench(argv[2], stdout);
+
     @autoreleasepool {
         [NSApplication sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];

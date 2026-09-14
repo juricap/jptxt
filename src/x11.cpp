@@ -27,7 +27,7 @@ static XFontSet g_fs;
 static int      g_scr;
 static App      g_app;
 static int      g_font_px = 14;
-static Atom     g_wm_delete, g_utf8, g_targets, g_clip, g_ptext, g_open, g_ownwin;
+static Atom     g_wm_delete, g_utf8, g_targets, g_clip, g_ptext, g_open;
 static int      g_lockfd = -1;
 static std::string g_clip_own;
 static bool     g_have_clip = false;
@@ -120,19 +120,20 @@ static void paint() {
 }
 
 void plat_invalidate() {
-    if (!g_dpy) return;
+    if (!g_dpy || !g_win) return;
     XWindowAttributes wa{};
     XGetWindowAttributes(g_dpy, g_win, &wa);
     XClearArea(g_dpy, g_win, 0, 0, wa.width, wa.height, True);
 }
 void plat_set_title(const char* utf8) {
-    if (!g_dpy) return;
-    Xutf8SetWMProperties(g_dpy, g_win, utf8, utf8, nullptr, 0, nullptr, nullptr, nullptr);
+    if (!g_dpy || !g_win) return;
+    XStoreName(g_dpy, g_win, utf8);
+    XSetIconName(g_dpy, g_win, utf8);
 }
 void plat_clipboard_set(const std::string& s) {
     g_clip_own = s;
     g_have_clip = true;
-    XSetSelectionOwner(g_dpy, g_clip, g_win, CurrentTime);
+    if (g_dpy && g_win) XSetSelectionOwner(g_dpy, g_clip, g_win, CurrentTime);
 }
 bool plat_clipboard_get(std::string& s) {
     s.clear();
@@ -161,6 +162,7 @@ bool plat_clipboard_get(std::string& s) {
 void plat_scroll_set(int, int, int, int, int, int) {}
 void plat_caret(int, int, int, bool) {}
 void plat_cursor(int ibeam) {
+    if (!g_dpy || !g_win) return;
     static Cursor beam, arrow;
     static bool init = false;
     if (!init) {
@@ -328,13 +330,42 @@ static void handle_key(XKeyEvent* e) {
     }
 }
 
+static char g_lockpath[256];
+
 static int take_singleton_lock() {
-    char path[256];
-    snprintf(path, sizeof(path), "/tmp/jptxt-%d.lock", (int)getuid());
-    int fd = open(path, O_CREAT | O_RDWR, 0644);
+    snprintf(g_lockpath, sizeof(g_lockpath), "/tmp/jptxt-%d.lock", (int)getuid());
+    int fd = open(g_lockpath, O_CREAT | O_RDWR, 0644);
     if (fd < 0) return -1;
     if (flock(fd, LOCK_EX | LOCK_NB) != 0) { close(fd); return -2; }
     return fd;
+}
+
+static void write_lock_window(Window w) {
+    if (g_lockfd < 0) return;
+    char buf[64];
+    int n = snprintf(buf, sizeof(buf), "%lu\n", (unsigned long)w);
+    lseek(g_lockfd, 0, SEEK_SET);
+    if (ftruncate(g_lockfd, 0) == 0) {
+        ssize_t wr = write(g_lockfd, buf, (size_t)n);
+        (void)wr;
+    }
+}
+
+static Window read_lock_window() {
+    FILE* f = fopen(g_lockpath, "r");
+    if (!f) return 0;
+    unsigned long w = 0;
+    int ok = fscanf(f, "%lu", &w);
+    fclose(f);
+    return ok == 1 ? (Window)w : 0;
+}
+
+static int xerr(Display*, XErrorEvent* e) {
+    char buf[256];
+    XGetErrorText(g_dpy, e->error_code, buf, sizeof(buf));
+    fprintf(stderr, "jptxt X error: %s req=%u res=0x%lx\n",
+            buf, e->request_code, (unsigned long)e->resourceid);
+    return 0;
 }
 
 static void x11_ingest_open_prop(Window w) {
@@ -350,24 +381,22 @@ static void x11_ingest_open_prop(Window w) {
 
 int main(int argc, char** argv) {
     setlocale(LC_ALL, "");
+    if (argc >= 2 && strcmp(argv[1], "--selftest") == 0)
+        return doc_selftest(stdout);
+    if (argc >= 3 && strcmp(argv[1], "--bench") == 0)
+        return doc_bench(argv[2], stdout);
+
     g_dpy = XOpenDisplay(nullptr);
     if (!g_dpy) { fprintf(stderr, "jptxt: cannot open X display\n"); return 1; }
+    XSetErrorHandler(xerr);
     g_scr = DefaultScreen(g_dpy);
     g_cmap = DefaultColormap(g_dpy, g_scr);
     g_depth = DefaultDepth(g_dpy, g_scr);
     g_open = XInternAtom(g_dpy, "JPTXT_OPEN", False);
-    g_ownwin = XInternAtom(g_dpy, "JPTXT_WINDOW", False);
 
     g_lockfd = take_singleton_lock();
     if (g_lockfd == -2) {
-        Window root = RootWindow(g_dpy, g_scr);
-        Atom type; int fmt; unsigned long n = 0, extra = 0; unsigned char* data = nullptr;
-        Window exist = 0;
-        if (XGetWindowProperty(g_dpy, root, g_ownwin, 0, 1, False, XA_WINDOW,
-                               &type, &fmt, &n, &extra, &data) == Success && data && n) {
-            exist = *(Window*)data;
-            XFree(data);
-        }
+        Window exist = read_lock_window();
         if (exist) {
             std::string blob;
             for (int i = 1; i < argc; i++) {
@@ -395,7 +424,13 @@ int main(int argc, char** argv) {
     load_fontset(14);
 
     unsigned long bg = xcol(COL_BG);
-    g_win = XCreateSimpleWindow(g_dpy, RootWindow(g_dpy, g_scr), 80, 80, 1100, 720, 0, bg, bg);
+    Window root = DefaultRootWindow(g_dpy);
+    g_win = XCreateSimpleWindow(g_dpy, root, 80, 80, 1100, 720, 0, bg, bg);
+    if (!g_win) {
+        fprintf(stderr, "jptxt: XCreateSimpleWindow failed (root=%lu)\n", (unsigned long)root);
+        return 1;
+    }
+    write_lock_window(g_win);
     g_gc = XCreateGC(g_dpy, g_win, 0, nullptr);
     XSelectInput(g_dpy, g_win,
         ExposureMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask |
@@ -406,8 +441,6 @@ int main(int argc, char** argv) {
     g_targets = XInternAtom(g_dpy, "TARGETS", False);
     g_ptext = XA_STRING;
     XSetWMProtocols(g_dpy, g_win, &g_wm_delete, 1);
-    XChangeProperty(g_dpy, RootWindow(g_dpy, g_scr), g_ownwin, XA_WINDOW, 32, PropModeReplace,
-                    (unsigned char*)&g_win, 1);
     plat_set_title("jptxt");
     XMapWindow(g_dpy, g_win);
 

@@ -153,6 +153,8 @@ struct App {
 void     doc_init_empty(Doc* d, int untitled_n);
 bool     doc_load(Doc* d, const char* path_utf8);
 void     doc_set_trace(FILE* f);
+int      doc_bench(const char* path, FILE* out);   // 0 ok, 2 fail
+int      doc_selftest(FILE* out);                  // 0 ok
 bool     doc_save(Doc* d, const char* path_utf8);
 void     doc_unmap(Doc* d);
 uint64_t doc_line_count(const Doc* d);

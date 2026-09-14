@@ -1,8 +1,22 @@
 # Status
 
-v**0.1.1** — Windows build verified. Mac/Linux backends are in tree, not compiled on the Windows box.
+v**0.1.1** — Windows + Linux (`ssh ai`) verified. Mac (`ssh mac` / `macz`) was offline.
 
 Vault home: [[Home]]. Design: [[Design]]. Decisions: [[Choices]].
+
+## Linux (`jurzai1`, g++ 11.4, X11)
+
+| | |
+|---|---|
+| Binary | 291 KB ELF, `libX11` + libstdc++ only |
+| `--selftest` | ok |
+| sample.cpp | 0.07 ms |
+| `/bin/ls` | binary → hex, 0.10 ms |
+| 20 MB / 350k lines | 5.2 ms |
+| 120 MB / 2.1 M lines | **30 ms** |
+| xvfb GUI | runs (timeout smoke, no X errors) |
+
+`--bench` / `--selftest` work without a display.
 
 ## Works (Windows)
 

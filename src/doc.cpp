@@ -1,6 +1,7 @@
 #include "jptxt.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <cstdio>
 #include <cctype>
@@ -952,5 +953,85 @@ bool doc_save(Doc* d, const char* path_utf8) {
     d->dirty = false;
     d->save_undo_size = (int)d->undo.size();
     return true;
+}
+
+int doc_bench(const char* path, FILE* out) {
+    if (!out) out = stdout;
+    if (!path || !*path) {
+        fprintf(out, "bench: missing path\n");
+        return 2;
+    }
+    auto t0 = std::chrono::steady_clock::now();
+    Doc d;
+    bool ok = doc_load(&d, path);
+    auto t1 = std::chrono::steady_clock::now();
+    double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+    fprintf(out, "%s ok=%d bytes=%llu lines=%llu hex=%d bin=%d enc=%s time=%.2f ms\n",
+            path,
+            ok ? 1 : 0,
+            (unsigned long long)d.len,
+            (unsigned long long)(ok ? doc_line_count(&d) : 0),
+            ok && d.hex ? 1 : 0,
+            ok && d.binary ? 1 : 0,
+            ok ? enc_name(d.enc) : "?",
+            ms);
+    fflush(out);
+    return ok ? 0 : 2;
+}
+
+int doc_selftest(FILE* out) {
+    if (!out) out = stdout;
+    int fail = 0;
+    auto check = [&](bool c, const char* msg) {
+        if (!c) { fprintf(out, "FAIL %s\n", msg); fail++; }
+    };
+
+    Doc d;
+    doc_init_empty(&d, 1);
+    check(d.len == 0, "empty len");
+    doc_insert(&d, 0, "hello\nworld\n", 12);
+    check(d.len == 12, "insert len");
+    check(doc_line_count(&d) == 3, "three lines (trailing nl)");
+    std::string s;
+    doc_read(&d, 0, d.len, &s);
+    check(s == "hello\nworld\n", "read back");
+    doc_erase(&d, 5, 1); // drop first newline -> "helloworld\n"
+    doc_read(&d, 0, d.len, &s);
+    check(s == "helloworld\n", "erase nl");
+    doc_insert(&d, 5, "\n", 1);
+    doc_read(&d, 0, d.len, &s);
+    check(s == "hello\nworld\n", "reinsert nl");
+
+    bool bin = false; Enc enc = Enc::UTF8; Eol eol = Eol::LF;
+    static const uint8_t mz[] = { 'M', 'Z', 0x90, 0x00, 0x03, 0x00 };
+    detect_file(mz, sizeof(mz), &bin, &enc, &eol);
+    check(bin, "MZ stub is binary");
+    const uint8_t txt[] = { 'a', 'b', 'c', '\n' };
+    detect_file(txt, sizeof(txt), &bin, &enc, &eol);
+    check(!bin, "abc\\n is text");
+
+#ifdef _WIN32
+    char tmp[MAX_PATH];
+    GetTempPathA(MAX_PATH, tmp);
+    strncat(tmp, "jptxt-selftest.txt", MAX_PATH - strlen(tmp) - 1);
+#else
+    const char* tmp = "/tmp/jptxt-selftest.txt";
+#endif
+    check(doc_save(&d, tmp), "save");
+    Doc d2;
+    check(doc_load(&d2, tmp), "reload");
+    std::string s2;
+    doc_read(&d2, 0, d2.len, &s2);
+    check(s2 == "hello\nworld\n", "roundtrip");
+#ifdef _WIN32
+    DeleteFileA(tmp);
+#else
+    unlink(tmp);
+#endif
+
+    if (!fail) fprintf(out, "selftest ok\n");
+    else fprintf(out, "selftest %d failed\n", fail);
+    fflush(out);
+    return fail ? 3 : 0;
 }
 
