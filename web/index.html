@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jptxt — a tiny native notepad</title>
+<meta name="description" content="Super-fast native notepad. Tabs, syntax highlight, hex lister. No Electron. Install with one line.">
+<link rel="canonical" href="https://whatamieatingtoday.com/app/jptxt/">
+<style>
+  :root {
+    --bg: #1e1e1e;
+    --fg: #d4d4d4;
+    --dim: #858585;
+    --acc: #007acc;
+    --panel: #252526;
+    --code: #111;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.5 ui-sans-serif, system-ui, sans-serif;
+    max-width: 42rem; margin-inline: auto; padding: 2.5rem 1.25rem 4rem;
+  }
+  h1 { font-size: 1.75rem; font-weight: 650; letter-spacing: -.03em; margin: 0 0 .35rem; }
+  .tag { color: var(--acc); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+  p, li { color: var(--fg); }
+  .dim { color: var(--dim); }
+  a { color: var(--acc); }
+  pre, code { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
+  pre {
+    background: var(--code); border: 1px solid #333; border-radius: 8px;
+    padding: .9rem 1rem; overflow-x: auto; position: relative;
+  }
+  h2 { font-size: 1.05rem; margin: 2rem 0 .6rem; }
+  ul { padding-left: 1.1rem; }
+  .row { display: flex; gap: .6rem; flex-wrap: wrap; margin: 1rem 0 0; }
+  .btn {
+    display: inline-block; background: var(--panel); color: var(--fg);
+    border: 1px solid #3e3e42; border-radius: 6px; padding: .45rem .8rem;
+    text-decoration: none; font-size: .85rem;
+  }
+  .btn:hover { border-color: var(--acc); }
+  footer { margin-top: 3rem; color: var(--dim); font-size: .85rem; }
+</style>
+</head>
+<body>
+  <div class="tag">notepad</div>
+  <h1>jptxt</h1>
+  <p>A super-fast native notepad. Tabs, syntax highlight, regex search, hex lister for binaries. No Electron, no sidebar, no scripting. One process.</p>
+
+  <h2>Windows</h2>
+  <pre>irm https://whatamieatingtoday.com/app/jptxt/install.ps1 | iex</pre>
+  <p class="dim">PowerShell. Installs to <code>%LOCALAPPDATA%\Programs\jptxt</code> and adds it to your user PATH.</p>
+
+  <h2>macOS / Linux</h2>
+  <pre>curl -fsSL https://whatamieatingtoday.com/app/jptxt/install.sh | bash</pre>
+  <p class="dim">Installs to <code>~/.local/bin</code>. Linux needs <code>libx11-6</code> (<code>sudo apt install libx11-6</code>).</p>
+
+  <h2>Or grab a binary</h2>
+  <div class="row">
+    <a class="btn" href="https://github.com/juricap/jptxt/releases/latest/download/jptxt-windows-x64.exe">Windows x64</a>
+    <a class="btn" href="https://github.com/juricap/jptxt/releases/latest/download/jptxt-macos-arm64">macOS Apple Silicon</a>
+    <a class="btn" href="https://github.com/juricap/jptxt/releases/latest/download/jptxt-linux-x64">Linux x64</a>
+  </div>
+
+  <h2>What you get</h2>
+  <ul>
+    <li>Opens 100&nbsp;MB+ text files (mmap, ~30–70&nbsp;ms)</li>
+    <li>Single instance — a second launch adds a tab</li>
+    <li>Triple-Esc closes</li>
+    <li>~200–400&nbsp;KB, no extra runtime</li>
+  </ul>
+
+  <footer>
+    Source and releases: <a href="https://github.com/juricap/jptxt">github.com/juricap/jptxt</a>
+    · v0.1.2
+  </footer>
+</body>
+</html>

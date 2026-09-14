@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # jptxt installer for macOS / Linux
+#   curl -fsSL https://whatamieatingtoday.com/app/jptxt/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/juricap/jptxt/main/install.sh | bash
 # Pin:  curl -fsSL ... | JPTXT_VERSION=v0.1.2 bash
 set -euo pipefail

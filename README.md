@@ -8,10 +8,12 @@ A super-fast, super-light native notepad. Tabs, basic syntax highlighting, block
 
 Binaries come from [GitHub Releases](https://github.com/juricap/jptxt/releases). No extra runtimes.
 
+Page: [whatamieatingtoday.com/app/jptxt](https://whatamieatingtoday.com/app/jptxt/)
+
 **Windows** (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/juricap/jptxt/main/install.ps1 | iex
+irm https://whatamieatingtoday.com/app/jptxt/install.ps1 | iex
 ```
 
 Puts `jptxt.exe` in `%LOCALAPPDATA%\Programs\jptxt` and adds that folder to your user PATH.
@@ -19,7 +21,7 @@ Puts `jptxt.exe` in `%LOCALAPPDATA%\Programs\jptxt` and adds that folder to your
 **macOS / Linux**:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/juricap/jptxt/main/install.sh | bash
+curl -fsSL https://whatamieatingtoday.com/app/jptxt/install.sh | bash
 ```
 
 Puts `jptxt` in `~/.local/bin`. Add that to `PATH` if the installer says so.

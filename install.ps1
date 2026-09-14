@@ -1,4 +1,5 @@
 # jptxt installer for Windows (PowerShell 5.1+)
+#   irm https://whatamieatingtoday.com/app/jptxt/install.ps1 | iex
 #   irm https://raw.githubusercontent.com/juricap/jptxt/main/install.ps1 | iex
 # Pin:  $env:JPTXT_VERSION='v0.1.2'; irm ... | iex
 $ErrorActionPreference = 'Stop'
