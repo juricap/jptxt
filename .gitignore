@@ -1,0 +1,15 @@
+/build/
+/out/
+/testdata/*.txt
+/testdata/*.dat
+/jptxt-bench.log
+obsidian/.obsidian/workspace.json
+obsidian/.obsidian/workspace-mobile.json
+obsidian/.obsidian/graph.json
+obsidian/.obsidian/cache/
+*.user
+*.sdf
+*.suo
+*.jptxt~
+.vs/
+CMakeUserPresets.json

@@ -1,0 +1,90 @@
+#include <windows.h>
+#include "resource.h"
+
+IDR_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",            CMD_NEW
+        MENUITEM "&Open...\tCtrl+O",        CMD_OPEN
+        MENUITEM "&Save\tCtrl+S",           CMD_SAVE
+        MENUITEM "Save &As...",             CMD_SAVEAS
+        MENUITEM "&Close\tCtrl+W",          CMD_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+F4",           CMD_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",           CMD_UNDO
+        MENUITEM "&Redo\tCtrl+Y",           CMD_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",            CMD_CUT
+        MENUITEM "&Copy\tCtrl+C",           CMD_COPY
+        MENUITEM "&Paste\tCtrl+V",          CMD_PASTE
+        MENUITEM "Select &All\tCtrl+A",     CMD_SELALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Indent\tTab",            CMD_INDENT
+        MENUITEM "U&nindent\tShift+Tab",    CMD_UNINDENT
+    END
+    POPUP "&Search"
+    BEGIN
+        MENUITEM "&Find...\tCtrl+F",        CMD_FIND
+        MENUITEM "Find &Next\tF3",          CMD_FINDNEXT
+        MENUITEM "Find Pre&vious\tShift+F3",CMD_FINDPREV
+        MENUITEM "&Replace...\tCtrl+H",     CMD_REPLACE
+        MENUITEM "&Go to Line...\tCtrl+G",  CMD_GOTO
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Text mode",              CMD_TEXT
+        MENUITEM "&Hex mode (lister)\tCtrl+Shift+H", CMD_HEX
+        MENUITEM SEPARATOR
+        MENUITEM "Font &larger\tCtrl++",    CMD_FONT_UP
+        MENUITEM "Font &smaller\tCtrl+-",   CMD_FONT_DN
+        MENUITEM "Font &reset\tCtrl+0",     CMD_FONT_RST
+        MENUITEM SEPARATOR
+        MENUITEM "Next tab\tCtrl+Tab",      CMD_NEXTTAB
+        MENUITEM "Previous tab\tCtrl+Shift+Tab", CMD_PREVTAB
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About jptxt",            CMD_ABOUT
+    END
+END
+
+IDD_GOTO DIALOGEX 0, 0, 186, 54
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go to line"
+FONT 9, "Segoe UI"
+BEGIN
+    LTEXT           "Line number:",-1,8,10,50,10
+    EDITTEXT        IDC_LINE,62,8,110,14,ES_NUMBER | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,74,32,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,32,50,14
+END
+
+IDR_ACCEL ACCELERATORS
+BEGIN
+    "N", CMD_NEW,     VIRTKEY, CONTROL
+    "O", CMD_OPEN,    VIRTKEY, CONTROL
+    "S", CMD_SAVE,    VIRTKEY, CONTROL
+    "W", CMD_CLOSE,   VIRTKEY, CONTROL
+    "Z", CMD_UNDO,    VIRTKEY, CONTROL
+    "Y", CMD_REDO,    VIRTKEY, CONTROL
+    "X", CMD_CUT,     VIRTKEY, CONTROL
+    "C", CMD_COPY,    VIRTKEY, CONTROL
+    "V", CMD_PASTE,   VIRTKEY, CONTROL
+    "A", CMD_SELALL,  VIRTKEY, CONTROL
+    "F", CMD_FIND,    VIRTKEY, CONTROL
+    "H", CMD_REPLACE, VIRTKEY, CONTROL
+    "G", CMD_GOTO,    VIRTKEY, CONTROL
+    "H", CMD_HEX,     VIRTKEY, CONTROL, SHIFT
+    VK_TAB, CMD_NEXTTAB, VIRTKEY, CONTROL
+    VK_TAB, CMD_PREVTAB, VIRTKEY, CONTROL, SHIFT
+    VK_F3, CMD_FINDNEXT, VIRTKEY
+    VK_F3, CMD_FINDPREV, VIRTKEY, SHIFT
+    VK_OEM_PLUS,  CMD_FONT_UP, VIRTKEY, CONTROL
+    VK_OEM_MINUS, CMD_FONT_DN, VIRTKEY, CONTROL
+    "0", CMD_FONT_RST, VIRTKEY, CONTROL
+END
+
